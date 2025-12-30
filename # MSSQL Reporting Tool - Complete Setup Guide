@@ -1,0 +1,279 @@
+# MSSQL Reporting Tool - Complete Setup Guide
+
+## 📋 Overview
+This is a web-based tool to query your MSSQL database from any browser on your local network. No React build tools required!
+
+## 🛠️ Prerequisites
+- **Node.js** (version 14 or higher) - Download from https://nodejs.org
+- **MSSQL Database** with admin credentials
+- **Windows/Linux/Mac** computer to run the server
+
+---
+
+## 📦 Step 1: Create Project Structure
+
+### 1.1 Create the project folder
+```bash
+mkdir mssql-reporting-tool
+cd mssql-reporting-tool
+```
+
+### 1.2 Create subfolder for frontend
+```bash
+mkdir public
+```
+
+Your folder structure should look like:
+```
+mssql-reporting-tool/
+├── public/
+│   └── index.html (you'll create this next)
+├── server.js (you'll create this next)
+└── package.json (you'll create this next)
+```
+
+---
+
+## 📝 Step 2: Create the Files
+
+### 2.1 Create `package.json`
+Create a file named `package.json` in the root folder with this content:
+
+```json
+{
+  "name": "mssql-reporting-tool",
+  "version": "1.0.0",
+  "description": "Web-based MSSQL reporting tool with backend server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["mssql", "reporting", "database"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mssql": "^10.0.1",
+    "cors": "^2.8.5"
+  }
+}
+```
+
+### 2.2 Create `server.js`
+Copy the **complete backend server code** I provided earlier into a file named `server.js` in the root folder.
+
+### 2.3 Create `public/index.html`
+Copy the **standalone HTML frontend** I just provided into `public/index.html`.
+
+---
+
+## 🚀 Step 3: Install Dependencies
+
+Open a terminal/command prompt in your project folder and run:
+
+```bash
+npm install
+```
+
+This will download and install:
+- **express** - Web server framework
+- **mssql** - MSSQL database driver
+- **cors** - Cross-origin resource sharing
+
+You should see a `node_modules` folder created.
+
+---
+
+## ▶️ Step 4: Start the Server
+
+### 4.1 Run the server
+```bash
+npm start
+```
+
+### 4.2 You should see this output:
+```
+╔═══════════════════════════════════════════════╗
+║  MSSQL Reporting Tool Backend Server          ║
+║  Status: Running                              ║
+║  Port: 3000                                   ║
+║  URL: http://localhost:3000                   ║
+╚═══════════════════════════════════════════════╝
+
+Server is ready to accept connections.
+```
+
+---
+
+## 🌐 Step 5: Access the Tool
+
+### 5.1 On the same computer:
+Open your browser and go to:
+```
+http://localhost:3000
+```
+
+### 5.2 From other computers on your network:
+
+**First, find your server's IP address:**
+
+**On Windows:**
+```bash
+ipconfig
+```
+Look for "IPv4 Address" (e.g., 192.168.1.100)
+
+**On Linux/Mac:**
+```bash
+ifconfig
+```
+or
+```bash
+ip addr show
+```
+
+**Then access from other computers:**
+```
+http://YOUR_SERVER_IP:3000
+```
+Example: `http://192.168.1.100:3000`
+
+---
+
+## 🔐 Step 6: Connect to Your Database
+
+1. Enter your MSSQL server details:
+   - **Server**: Your SQL Server address (e.g., `localhost`, `192.168.1.50`, or `SERVERNAME\INSTANCENAME`)
+   - **Database**: Your database name
+   - **Username**: Your admin username
+   - **Password**: Your admin password
+   - **Port**: Usually `1433` (default)
+
+2. Click "Connect to Database"
+
+3. Once connected, you'll see all your tables listed on the left side
+
+---
+
+## 📊 Step 7: Query Your Data
+
+### Method 1: Quick Table Preview
+1. Click on any table name in the left sidebar
+2. Click "Load Preview (100 rows)" to see sample data
+
+### Method 2: Custom SQL Queries
+1. Select a table (this will auto-populate a query)
+2. Modify the SQL query in the text box
+3. Click "Run Query"
+4. Results will appear in a table below
+
+### Method 3: Export Data
+1. After running any query
+2. Click "Export CSV" to download the results
+
+### Example Queries:
+```sql
+-- Find all users
+SELECT * FROM Users
+
+-- Search for specific user
+SELECT * FROM Users WHERE Username LIKE '%john%'
+
+-- Join users and clients
+SELECT u.Username, c.ClientName 
+FROM Users u 
+JOIN UserClientMapping m ON u.UserID = m.UserID 
+JOIN Clients c ON m.ClientID = c.ClientID
+
+-- Count records
+SELECT COUNT(*) as TotalUsers FROM Users
+
+-- Filter by date
+SELECT * FROM Users WHERE CreatedDate > '2024-01-01'
+```
+
+---
+
+## 🛑 Troubleshooting
+
+### Problem: "Failed to connect to backend server"
+**Solution:** Make sure the Node.js server is running (`npm start`)
+
+### Problem: "Failed to connect to database"
+**Solutions:**
+- Check your server address, database name, username, and password
+- Ensure MSSQL Server is running
+- Verify TCP/IP is enabled in SQL Server Configuration Manager
+- Check Windows Firewall allows port 1433
+- For named instances, use format: `SERVERNAME\INSTANCENAME`
+
+### Problem: "Cannot access from other computers"
+**Solutions:**
+- Check your firewall allows port 3000
+- Verify both computers are on the same network
+- Use the correct server IP address
+
+### Problem: Query times out
+**Solution:** Increase timeout in server.js:
+```javascript
+connectionTimeout: 60000,  // Increase to 60 seconds
+requestTimeout: 60000
+```
+
+---
+
+## 🔒 Security Recommendations
+
+Since this runs on your local network:
+
+1. **Don't expose port 3000 to the internet**
+2. **Use strong database passwords**
+3. **Consider creating a read-only database user** instead of using admin credentials:
+   ```sql
+   CREATE LOGIN reporting_user WITH PASSWORD = 'StrongPassword123!';
+   USE YourDatabase;
+   CREATE USER reporting_user FOR LOGIN reporting_user;
+   GRANT SELECT ON SCHEMA::dbo TO reporting_user;
+   ```
+4. **Regularly update Node.js** and npm packages
+
+---
+
+## 🔧 Advanced Configuration
+
+### Change the port (if 3000 is already in use):
+Edit `server.js`:
+```javascript
+const PORT = 3001;  // Change to any available port
+```
+
+Then update `index.html`:
+```javascript
+backendUrl: 'http://localhost:3001'  // Match the new port
+```
+
+### Enable HTTPS (for production):
+You would need to add SSL certificates and modify the server configuration.
+
+---
+
+## 📞 Support
+
+If you encounter issues:
+1. Check the server console for error messages
+2. Check your browser's console (F12) for frontend errors
+3. Verify your database connection settings
+4. Ensure all required Node.js packages are installed
+
+---
+
+## 🎉 You're All Set!
+
+Your MSSQL Reporting Tool is now ready to use. You can:
+- ✅ Browse all database tables
+- ✅ Run custom SQL queries
+- ✅ Export results to CSV
+- ✅ Access from any browser on your network
+- ✅ No React build tools required!
+
+Enjoy querying your database!
