@@ -1,0 +1,436 @@
+import React, { useState } from 'react';
+import { Database, Search, Download, RefreshCw, Table, AlertCircle, CheckCircle } from 'lucide-react';
+
+export default function MSSQLReportingTool() {
+  const [connectionConfig, setConnectionConfig] = useState({
+    server: '',
+    database: '',
+    username: '',
+    password: '',
+    port: '1433'
+  });
+  const [connected, setConnected] = useState(false);
+  const [tables, setTables] = useState([]);
+  const [selectedTable, setSelectedTable] = useState('');
+  const [queryResults, setQueryResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [customQuery, setCustomQuery] = useState('');
+  const [backendUrl] = useState('http://localhost:3000');
+
+  const handleConnect = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch(`${backendUrl}/api/connect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(connectionConfig)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setTables(data.tables);
+        setConnected(true);
+      } else {
+        setError(data.error || 'Failed to connect to database');
+      }
+    } catch (err) {
+      setError('Failed to connect to backend server. Make sure the server is running on port 3000.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      await fetch(`${backendUrl}/api/disconnect`, { method: 'POST' });
+      setConnected(false);
+      setTables([]);
+      setSelectedTable('');
+      setQueryResults(null);
+      setCustomQuery('');
+    } catch (err) {
+      console.error('Disconnect error:', err);
+    }
+  };
+
+  const executeQuery = async (query) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch(`${backendUrl}/api/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setQueryResults({
+          columns: data.columns,
+          data: data.data,
+          rowCount: data.rowCount
+        });
+      } else {
+        setError(data.error || 'Query execution failed');
+        setQueryResults(null);
+      }
+    } catch (err) {
+      setError('Failed to execute query: ' + err.message);
+      setQueryResults(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTableSelect = (tableName) => {
+    setSelectedTable(tableName);
+    const query = `SELECT TOP 1000 * FROM [${tableName}]`;
+    setCustomQuery(query);
+  };
+
+  const handleRunQuery = () => {
+    if (customQuery.trim()) {
+      executeQuery(customQuery);
+    }
+  };
+
+  const loadTablePreview = async (tableName) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch(`${backendUrl}/api/table-preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tableName })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setQueryResults({
+          columns: data.columns,
+          data: data.data,
+          rowCount: data.rowCount
+        });
+      }
+    } catch (err) {
+      setError('Failed to load preview: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportToCSV = () => {
+    if (!queryResults || !queryResults.data.length) return;
+    
+    const csv = [
+      queryResults.columns.join(','),
+      ...queryResults.data.map(row => 
+        queryResults.columns.map(col => {
+          const value = row[col];
+          if (value === null || value === undefined) return '';
+          const str = String(value);
+          return str.includes(',') || str.includes('"') || str.includes('\n') 
+            ? `"${str.replace(/"/g, '""')}"` 
+            : str;
+        }).join(',')
+      )
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `export_${selectedTable || 'query'}_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const quickQueries = [
+    { label: 'Find Users', query: "SELECT * FROM Users WHERE Username LIKE '%'" },
+    { label: 'Find Clients', query: "SELECT * FROM Clients WHERE ClientName LIKE '%'" },
+    { label: 'User-Client Mapping', query: "SELECT u.Username, c.ClientName FROM Users u JOIN UserClientMapping m ON u.UserID = m.UserID JOIN Clients c ON m.ClientID = c.ClientID" }
+  ];
+
+  if (!connected) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-lg shadow-xl p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Database className="w-8 h-8 text-blue-600" />
+              <h1 className="text-3xl font-bold text-gray-800">MSSQL Reporting Tool</h1>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex gap-2">
+                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-semibold mb-1">Backend Server Required</p>
+                  <p>Make sure the Node.js backend server is running on <code className="bg-blue-100 px-1 rounded">localhost:3000</code></p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Server</label>
+                <input
+                  type="text"
+                  placeholder="localhost or server IP address"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={connectionConfig.server}
+                  onChange={(e) => setConnectionConfig({...connectionConfig, server: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Database Name</label>
+                <input
+                  type="text"
+                  placeholder="Your database name"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={connectionConfig.database}
+                  onChange={(e) => setConnectionConfig({...connectionConfig, database: e.target.value})}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                  <input
+                    type="text"
+                    placeholder="Admin username"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={connectionConfig.username}
+                    onChange={(e) => setConnectionConfig({...connectionConfig, username: e.target.value})}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={connectionConfig.password}
+                    onChange={(e) => setConnectionConfig({...connectionConfig, password: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Port</label>
+                <input
+                  type="text"
+                  placeholder="1433 (default)"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={connectionConfig.port}
+                  onChange={(e) => setConnectionConfig({...connectionConfig, port: e.target.value})}
+                />
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
+              <button
+                onClick={handleConnect}
+                disabled={loading || !connectionConfig.server || !connectionConfig.database || !connectionConfig.username}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium transition-colors"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <Database className="w-5 h-5" />
+                    Connect to Database
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-lg shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-6 h-6 text-green-300" />
+              <div>
+                <h1 className="text-xl font-bold text-white">Connected to {connectionConfig.database}</h1>
+                <p className="text-blue-100 text-sm">{connectionConfig.server}:{connectionConfig.port}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleDisconnect}
+              className="text-white hover:bg-blue-800 px-4 py-2 rounded-lg transition-colors"
+            >
+              Disconnect
+            </button>
+          </div>
+
+          <div className="grid grid-cols-12 gap-6 p-6">
+            <div className="col-span-3 space-y-4">
+              <div className="flex items-center gap-2 text-gray-700 font-semibold mb-3">
+                <Table className="w-5 h-5" />
+                <h2>Tables ({tables.length})</h2>
+              </div>
+              
+              <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+                {tables.map(table => (
+                  <div key={table.name}>
+                    <button
+                      onClick={() => handleTableSelect(table.name)}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                        selectedTable === table.name
+                          ? 'bg-blue-100 border-2 border-blue-500 text-blue-900'
+                          : 'bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <div className="font-medium">{table.name}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {table.rowCount.toLocaleString()} rows • {table.columns.length} cols
+                      </div>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="col-span-9 space-y-4">
+              {selectedTable && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="text-sm text-blue-800">
+                    <span className="font-semibold">Selected:</span> {selectedTable}
+                    <button
+                      onClick={() => loadTablePreview(selectedTable)}
+                      className="ml-4 text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Load Preview (100 rows)
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">SQL Query</label>
+                  <div className="flex gap-2">
+                    {quickQueries.map((q, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCustomQuery(q.query)}
+                        className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
+                      >
+                        {q.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <textarea
+                  value={customQuery}
+                  onChange={(e) => setCustomQuery(e.target.value)}
+                  placeholder="SELECT * FROM Users WHERE Username LIKE '%john%'"
+                  className="w-full h-32 px-4 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleRunQuery}
+                  disabled={loading || !customQuery.trim()}
+                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium transition-colors"
+                >
+                  {loading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Running Query...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4" />
+                      Run Query
+                    </>
+                  )}
+                </button>
+                
+                {queryResults && queryResults.data.length > 0 && (
+                  <button
+                    onClick={exportToCSV}
+                    className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center gap-2 font-medium transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export CSV
+                  </button>
+                )}
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  <strong>Error:</strong> {error}
+                </div>
+              )}
+
+              {queryResults && (
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                    <p className="text-sm text-gray-600 font-medium">
+                      {queryResults.rowCount.toLocaleString()} rows returned
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {queryResults.columns.length} columns
+                    </p>
+                  </div>
+                  <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-100 sticky top-0">
+                        <tr>
+                          {queryResults.columns.map(col => (
+                            <th key={col} className="px-4 py-2 text-left text-xs font-semibold text-gray-700 border-b whitespace-nowrap">
+                              {col}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {queryResults.data.map((row, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            {queryResults.columns.map(col => (
+                              <td key={col} className="px-4 py-2 text-sm text-gray-600 border-b whitespace-nowrap">
+                                {row[col] !== null && row[col] !== undefined ? String(row[col]) : '—'}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
