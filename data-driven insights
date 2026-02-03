@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalTech ROI Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #002248;
+            --secondary-pink: #ec26c1;
+            --bright-orange: #ff6b35;
+            --light-bg: #f8f9fa;
+            --white: #ffffff;
+            --border-color: #e0e4e8;
+            --shadow: 0 2px 8px rgba(0, 34, 72, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 34, 72, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: var(--primary-blue);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-pink) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #6c757d;
+            font-weight: 400;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--secondary-pink);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--secondary-pink);
+            box-shadow: 0 0 0 3px rgba(236, 38, 193, 0.1);
+        }
+
+        .form-group input:disabled {
+            background: var(--light-bg);
+            cursor: not-allowed;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .metric-display {
+            background: var(--bright-orange);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 1rem;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .metric-display .label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.95;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-display .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .info-text {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 0.25rem;
+        }
+
+        .section-divider {
+            margin: 3rem 0;
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary-pink), transparent);
+        }
+
+        .roi-section {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            animation: fadeInUp 0.8s ease-out;
+            animation-fill-mode: both;
+            animation-delay: 0.2s;
+        }
+
+        .roi-section h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #4a1a5c 70%, #d946a6 100%);
+            color: var(--white);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td:nth-child(2) {
+            text-align: right;
+        }
+
+        td:nth-child(3) {
+            text-align: left;
+        }
+
+        td:nth-child(4),
+        td:nth-child(5) {
+            text-align: right;
+        }
+
+        th:nth-child(1) {
+            text-align: left;
+        }
+
+        th:nth-child(2) {
+            text-align: right;
+        }
+
+        th:nth-child(3) {
+            text-align: left;
+        }
+
+        th:nth-child(4),
+        th:nth-child(5) {
+            text-align: right;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .orange-row:hover,
+        .light-orange-row:hover,
+        .highlight-row:hover {
+            background: inherit !important;
+        }
+
+        .orange-row:hover td,
+        .light-orange-row:hover td,
+        .highlight-row:hover td {
+            background: inherit !important;
+        }
+
+        td input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        td input.percent-input {
+            text-align: right;
+            width: 60px;
+            display: inline-block;
+        }
+
+        td input.percent-input::after {
+            content: '%';
+        }
+
+        .percent-symbol {
+            margin-left: 4px;
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+
+        td input:focus {
+            outline: none;
+            border-color: var(--secondary-pink);
+        }
+
+        .readonly-cell {
+            background: var(--light-bg);
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .highlight-row {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            color: var(--primary-blue);
+            border-left: 4px solid var(--secondary-pink);
+        }
+
+        .highlight-row td {
+            border-bottom: 2px solid var(--secondary-pink);
+            color: var(--primary-blue);
+        }
+
+        .highlight-row input {
+            background: white;
+            border: 2px solid var(--primary-blue);
+            color: var(--primary-blue);
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .highlight-row input:focus {
+            outline: none;
+            border-color: var(--secondary-pink);
+            box-shadow: 0 0 0 3px rgba(236, 38, 193, 0.1);
+        }
+
+        .highlight-row .readonly-cell {
+            background: transparent;
+            color: var(--primary-blue);
+        }
+
+        .orange-row {
+            background: linear-gradient(135deg, var(--bright-orange) 0%, #ff8c5a 100%);
+            color: var(--white);
+        }
+
+        .orange-row td {
+            border-bottom: 2px solid #ff8c5a;
+        }
+
+        .orange-row input {
+            background: white;
+            border: 2px solid var(--primary-blue);
+            color: var(--primary-blue);
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
+            cursor: text;
+        }
+
+        .orange-row input:focus {
+            outline: none;
+            border-color: var(--secondary-pink);
+            box-shadow: 0 0 0 3px rgba(236, 38, 193, 0.1);
+        }
+
+        .orange-row .readonly-cell {
+            background: transparent;
+            color: var(--white);
+        }
+
+        .light-orange-row {
+            background: linear-gradient(135deg, #ffb380 0%, #ffc999 100%);
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .light-orange-row td {
+            border-bottom: 2px solid #ffb380;
+        }
+
+        .light-orange-row input {
+            background: white !important;
+            border: 2px solid var(--primary-blue) !important;
+            color: var(--primary-blue) !important;
+            font-weight: 600 !important;
+            pointer-events: auto !important;
+            cursor: text !important;
+        }
+
+        .light-orange-row input:focus {
+            outline: none !important;
+            border-color: var(--secondary-pink) !important;
+            box-shadow: 0 0 0 3px rgba(236, 38, 193, 0.1) !important;
+        }
+
+        .editable-orange-input {
+            background: white !important;
+            border: 2px solid var(--primary-blue) !important;
+            color: var(--primary-blue) !important;
+            font-weight: 600 !important;
+            width: 100% !important;
+            padding: 0.5rem !important;
+            border-radius: 6px !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 0.9rem !important;
+        }
+
+        .revenue-table {
+            margin-top: 2rem;
+        }
+
+        .revenue-table th:nth-child(1),
+        .revenue-table td:nth-child(1) {
+            width: 35%;
+        }
+
+        .revenue-table th:nth-child(2),
+        .revenue-table td:nth-child(2),
+        .revenue-table th:nth-child(3),
+        .revenue-table td:nth-child(3),
+        .revenue-table th:nth-child(4),
+        .revenue-table td:nth-child(4) {
+            width: 21.67%;
+            text-align: right;
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            color: var(--primary-blue);
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: inset 3px 0 0 0 var(--secondary-pink);
+        }
+
+        .total-row td {
+            border: none;
+            padding: 1.25rem 1rem;
+            border-bottom: none;
+        }
+
+        .total-row td:first-child {
+        }
+
+        .total-row td:last-child {
+        }
+
+        .total-row td:nth-child(2),
+        .total-row td:nth-child(3),
+        .total-row td:nth-child(4) {
+            text-align: right;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .subsection-header {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0 1rem 0;
+            border-left: 4px solid var(--secondary-pink);
+        }
+
+        .subsection-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .roi-section {
+                padding: 1.5rem;
+            }
+            
+            table {
+                font-size: 0.85rem;
+            }
+            
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+
+        .footer {
+            background: var(--white);
+            padding: 1.5rem 2rem;
+            margin-top: 3rem;
+            border-top: 2px solid var(--border-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            color: var(--primary-blue);
+        }
+
+        .footer-line1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-line2 {
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .page-number {
+            font-family: 'Poppins', sans-serif;
+            font-size: 9pt;
+            color: var(--primary-blue);
+        }
+
+        .print-button {
+            background: linear-gradient(135deg, var(--bright-orange) 0%, #ff8c5a 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .print-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+        }
+
+        @media print {
+            /* Preserve all colors and styles exactly as on screen */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            /* Hide print button */
+            .print-button {
+                display: none !important;
+            }
+
+            /* Page 1: Header + Dashboard cards together */
+            .dashboard {
+                page-break-after: always !important;
+            }
+
+            /* Page 2: ROI Analysis section */
+            .roi-section {
+                page-break-before: always !important;
+                page-break-after: always !important;
+            }
+
+            /* Page 3: Revenue tables together */
+            .revenue-table:first-of-type {
+                page-break-before: always !important;
+                page-break-after: avoid !important;
+            }
+
+            /* Footer with dynamic page numbers */
+            .footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                padding: 0.6rem 2rem;
+                background: white;
+                border-top: 1px solid #ddd;
+            }
+
+            .page-number::after {
+                content: "Page " counter(page) " of 3";
+            }
+
+            .page-number span {
+                display: none;
+            }
+
+            /* Page settings */
+            @page {
+                size: A4 portrait;
+                margin: 1.5cm 1.5cm 3cm 1.5cm;
+            }
+
+            /* Prevent orphaned content */
+            h2, h3, .subsection-header {
+                page-break-after: avoid !important;
+            }
+
+            tr, .card {
+                page-break-inside: avoid !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LegalTech ROI Calculator</h1>
+            <p>Transform your practice with data-driven insights</p>
+        </div>
+
+        <div class="dashboard">
+            <!-- Questions Section -->
+            <div class="card" style="animation-delay: 0s;">
+                <h2>Client Information</h2>
+                
+                <div class="form-group">
+                    <label>Boxes of Paper per Month</label>
+                    <input type="number" id="boxesPerMonth" value="10" min="0" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label>Telephone Costs (Monthly)</label>
+                    <input type="number" id="telephone" value="1500" min="0" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label>Cost Per Box</label>
+                    <input type="number" id="costPerBox" value="400" min="0" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label>Rental Cost per MFP Device</label>
+                    <input type="number" id="rentalCost" value="0.25" min="0" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label>Estimated Number of Copiers</label>
+                    <input type="number" id="copiers" value="3" min="0" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label>Telephone Rate per Hour</label>
+                    <input type="number" id="phoneRateHour" value="1500" min="0" step="0.01">
+                </div>
+            </div>
+
+            <!-- Staff Headcount Section -->
+            <div class="card" style="animation-delay: 0.1s;">
+                <h2>Staff Head Count</h2>
+                
+                <div class="form-group">
+                    <label>Billing Users</label>
+                    <input type="number" id="billingUsers" value="25" min="0" step="1">
+                    <p class="info-text">Commercial, Litigation, MVA, Medical</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Non-Billing Users</label>
+                    <input type="number" id="nonBillingUsers" value="6" min="0" step="1">
+                    <p class="info-text">Admin, Conveyancing, IT Dept., Filing</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Total Staff</label>
+                    <input type="number" id="totalStaff" value="31" disabled>
+                </div>
+
+                <div class="metric-display">
+                    <div class="label">Fee Billing Ratio</div>
+                    <div class="value" id="recoveryRatio">80.6%</div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label>Company Name <span style="color: var(--secondary-pink);">*</span></label>
+                    <input type="text" id="companyName" placeholder="Enter company name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Contact Name <span style="color: var(--secondary-pink);">*</span></label>
+                    <input type="text" id="contactName" placeholder="Enter contact name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address <span style="color: var(--secondary-pink);">*</span></label>
+                    <input type="email" id="emailAddress" placeholder="Enter email address" required>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- ROI Analysis Section -->
+        <div class="roi-section">
+            <h2>ROI Analysis</h2>
+
+            <div class="subsection-header">
+                <h3>Current Consumption Costs</h3>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pages per box</td>
+                            <td class="readonly-cell">2,500</td>
+                            <td>Standard box capacity</td>
+                        </tr>
+                        <tr>
+                            <td>Pages per Month</td>
+                            <td class="readonly-cell" id="pagesPerMonth">25,000</td>
+                            <td>Boxes × Pages per box</td>
+                        </tr>
+                        <tr>
+                            <td>Pages per Annum</td>
+                            <td class="readonly-cell" id="pagesPerAnnum">300,000</td>
+                            <td>Monthly pages × 12</td>
+                        </tr>
+                        <tr>
+                            <td>Cost of Paper Per Month</td>
+                            <td class="readonly-cell" id="paperCostMonth">R 4,000</td>
+                            <td>Boxes × Cost per box</td>
+                        </tr>
+                        <tr>
+                            <td>Cost of Paper Per Page (Actuals)</td>
+                            <td class="readonly-cell" id="costPerPage">R 0.16</td>
+                            <td>Cost per box ÷ Pages per box</td>
+                        </tr>
+                        <tr>
+                            <td>Rental Cost per MFP Device</td>
+                            <td class="readonly-cell" id="rentalDisplay">R 0.25</td>
+                            <td>Average cost per page</td>
+                        </tr>
+                        <tr>
+                            <td>Electricity Cost per MFP Device</td>
+                            <td class="readonly-cell">R 0.07</td>
+                            <td>Actuals</td>
+                        </tr>
+                        <tr>
+                            <td>Office Floor Rental Space</td>
+                            <td class="readonly-cell">R 0.05</td>
+                            <td>Per page allocation</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td>True Cost Per Print/Copy</td>
+                            <td class="readonly-cell" id="trueCost">R 0.53</td>
+                            <td>Including rental and maintenance</td>
+                        </tr>
+                        <tr class="orange-row">
+                            <td>Total Cost Per Print/Copy Per Month</td>
+                            <td class="readonly-cell" id="totalCostMonth">R 13,250</td>
+                            <td>True cost × Monthly pages</td>
+                        </tr>
+                        <tr>
+                            <td>Volume of Scans</td>
+                            <td class="readonly-cell" id="volumeScans">10,000</td>
+                            <td>40% of monthly pages</td>
+                        </tr>
+                        <tr>
+                            <td>Volume of eMails</td>
+                            <td class="readonly-cell" id="volumeEmails">22,000</td>
+                            <td>40 per day × Billing users × 22 days</td>
+                        </tr>
+                        <tr>
+                            <td>Telephone Calls (Rate/Hour)</td>
+                            <td class="readonly-cell" id="phoneRateHourDisplay">R 1,500</td>
+                            <td>Hourly rate</td>
+                        </tr>
+                        <tr>
+                            <td>Telephone Calls (Rate/Minute)</td>
+                            <td class="readonly-cell" id="phoneRateMinuteDisplay">R 25.00</td>
+                            <td>Rate per hour ÷ 60</td>
+                        </tr>
+                        <tr>
+                            <td>Actual Telephone Call Costs</td>
+                            <td class="readonly-cell" id="actualTelCost">R 1,500</td>
+                            <td>Clients Input</td>
+                        </tr>
+                        <tr>
+                            <td>Volume of Telephone Calls</td>
+                            <td class="readonly-cell" id="volumeCalls">2,500</td>
+                            <td>40 cents per minute</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="subsection-header">
+                <h3>Recovery Analysis</h3>
+            </div>
+
+            <div class="table-container revenue-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Monthly Volume</th>
+                            <th>Shrinkage Costs</th>
+                            <th>Billable Volumes</th>
+                            <th>Recovery Charges</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Copy & Print</td>
+                            <td class="readonly-cell" id="vol_copy">25,000</td>
+                            <td><input type="number" class="percent-input" id="shrink_copy" value="15" min="0" max="100" step="1" style="text-align: right;"> %</td>
+                            <td class="readonly-cell" id="bill_copy">21,250</td>
+                            <td><input type="number" id="rec_copy" value="7" min="0" step="0.01" style="text-align: right;"></td>
+                        </tr>
+                        <tr>
+                            <td>Colour Print</td>
+                            <td><input type="number" id="vol_colour" value="0" min="0" step="1" style="text-align: right;"></td>
+                            <td><input type="number" class="percent-input" id="shrink_colour" value="10" min="0" max="100" step="1" style="text-align: right;"> %</td>
+                            <td class="readonly-cell" id="bill_colour">0</td>
+                            <td><input type="number" id="rec_colour" value="16.5" min="0" step="0.01" style="text-align: right;"></td>
+                        </tr>
+                        <tr>
+                            <td>Landline & VoIP Phone</td>
+                            <td class="readonly-cell" id="vol_phone">62,500</td>
+                            <td><input type="number" class="percent-input" id="shrink_phone" value="20" min="0" max="100" step="1" style="text-align: right;"> %</td>
+                            <td class="readonly-cell" id="bill_phone">50,000</td>
+                            <td><input type="number" id="rec_phone" value="25" disabled style="text-align: right; background: #f8f9fa; cursor: not-allowed;"></td>
+                        </tr>
+                        <tr>
+                            <td>Number of Scans</td>
+                            <td class="readonly-cell" id="vol_scans">10,000</td>
+                            <td><input type="number" class="percent-input" id="shrink_scans" value="15" min="0" max="100" step="1" style="text-align: right;"> %</td>
+                            <td class="readonly-cell" id="bill_scans">8,500</td>
+                            <td><input type="number" id="rec_scans" value="2.75" min="0" step="0.01" style="text-align: right;"></td>
+                        </tr>
+                        <tr>
+                            <td>eMails (Averages per day)</td>
+                            <td class="readonly-cell" id="vol_emails">22,000</td>
+                            <td><input type="number" class="percent-input" id="shrink_emails" value="15" min="0" max="100" step="1" style="text-align: right;"> %</td>
+                            <td class="readonly-cell" id="bill_emails">18,700</td>
+                            <td><input type="number" id="rec_emails" value="2.75" min="0" step="0.01" style="text-align: right;"></td>
+                        </tr>
+                        <tr>
+                            <td>Mobile Phone Billing</td>
+                            <td><input type="number" id="vol_mobile" value="0" min="0" step="1" style="text-align: right;"></td>
+                            <td><input type="number" class="percent-input" id="shrink_mobile" value="15" min="0" max="100" step="1" style="text-align: right;"> %</td>
+                            <td class="readonly-cell" id="bill_mobile">0</td>
+                            <td><input type="number" id="rec_mobile" value="5" min="0" step="0.01" style="text-align: right;"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="subsection-header">
+                <h3>Projected Revenue Analysis</h3>
+            </div>
+
+            <div class="table-container revenue-table">
+                <table>
+                    <thead>
+                        <tr style="border-radius: 12px;">
+                            <th style="border-bottom: none; border-radius: 12px 0 0 0;">Item</th>
+                            <th style="background: linear-gradient(180deg, #808080 0%, #a9a9a9 100%); color: white; border-bottom: none; text-align: center;">Low-End Billing</th>
+                            <th style="background: linear-gradient(180deg, #4472C4 0%, #6b92d4 100%); color: white; border-bottom: none; text-align: center;">Mid Range Billing</th>
+                            <th style="background: linear-gradient(180deg, #70AD47 0%, #8ec467 100%); color: white; border-bottom: none; text-align: center; border-radius: 0 12px 0 0;">Actual Billings</th>
+                        </tr>
+                        <tr style="height: auto; background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); box-shadow: inset 3px 0 0 0 var(--secondary-pink);">
+                            <th style="background: transparent; border: none; color: var(--primary-blue); font-weight: 700; padding: 1rem; border-bottom: none;">Standard Technology Service Fee<sup>©</sup></th>
+                            <th style="background: transparent; color: var(--primary-blue); text-align: right; padding: 0.75rem 1rem; font-weight: 700; border-bottom: none;"><input type="number" id="lowEndPercent" value="10" min="0" max="100" step="1" style="width: 50px; text-align: right; padding: 0.35rem; border: 2px solid var(--primary-blue); border-radius: 4px; background: white; color: var(--primary-blue); font-weight: 600; font-size: 1rem;"> <span style="font-size: 1rem;">%</span></th>
+                            <th style="background: transparent; color: var(--primary-blue); text-align: right; padding: 0.75rem 1rem; font-weight: 700; border-bottom: none;"><input type="number" id="midRangePercent" value="25" min="0" max="100" step="1" style="width: 50px; text-align: right; padding: 0.35rem; border: 2px solid var(--primary-blue); border-radius: 4px; background: white; color: var(--primary-blue); font-weight: 600; font-size: 1rem;"> <span style="font-size: 1rem;">%</span></th>
+                            <th style="background: transparent; color: var(--primary-blue); text-align: right; padding: 0.75rem 1rem; font-weight: 700; border-bottom: none;"><input type="number" id="actualBillingPercent" value="81" disabled style="width: 50px; text-align: right; padding: 0.35rem; border: 2px solid var(--primary-blue); border-radius: 4px; background: white; color: var(--primary-blue); font-weight: 600; cursor: not-allowed; font-size: 1rem;"> <span style="font-size: 1rem;">%</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Copy & Print</td>
+                            <td class="readonly-cell" id="rev_copy_low">R 14,875</td>
+                            <td class="readonly-cell" id="rev_copy_mid">R 37,188</td>
+                            <td class="readonly-cell" id="rev_copy_act">R 119,801</td>
+                        </tr>
+                        <tr>
+                            <td>Colour Print</td>
+                            <td class="readonly-cell" id="rev_colour_low">R 0</td>
+                            <td class="readonly-cell" id="rev_colour_mid">R 0</td>
+                            <td class="readonly-cell" id="rev_colour_act">R 0</td>
+                        </tr>
+                        <tr>
+                            <td>Landline & VoIP Phone</td>
+                            <td class="readonly-cell" id="rev_phone_low">R 5,000</td>
+                            <td class="readonly-cell" id="rev_phone_mid">R 12,500</td>
+                            <td class="readonly-cell" id="rev_phone_act">R 40,300</td>
+                        </tr>
+                        <tr>
+                            <td>Scanning</td>
+                            <td class="readonly-cell" id="rev_scans_low">R 2,338</td>
+                            <td class="readonly-cell" id="rev_scans_mid">R 5,844</td>
+                            <td class="readonly-cell" id="rev_scans_act">R 18,841</td>
+                        </tr>
+                        <tr>
+                            <td>eMail Billings</td>
+                            <td class="readonly-cell" id="rev_emails_low">R 5,143</td>
+                            <td class="readonly-cell" id="rev_emails_mid">R 12,856</td>
+                            <td class="readonly-cell" id="rev_emails_act">R 41,445</td>
+                        </tr>
+                        <tr>
+                            <td>Mobile Phones</td>
+                            <td class="readonly-cell" id="rev_mobile_low">R 0</td>
+                            <td class="readonly-cell" id="rev_mobile_mid">R 0</td>
+                            <td class="readonly-cell" id="rev_mobile_act">R 0</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>Monthly Projected Revenue</td>
+                            <td id="total_low">R 27,356</td>
+                            <td id="total_mid">R 68,388</td>
+                            <td id="total_act">R 220,387</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>Annual Projected Revenue</td>
+                            <td id="annual_low">R 328,272</td>
+                            <td id="annual_mid">R 820,656</td>
+                            <td id="annual_act">R 2,644,644</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="print-button" onclick="validateAndPrint()">
+                Print to PDF
+            </button>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-line1">
+                <div>Khwezi Holdings (Pty) Copyright<sup>©</sup> All Right Reserved<sup>®</sup></div>
+                <div class="page-number">Page <span id="currentPage">1</span> of <span id="totalPages">3</span></div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Update page numbers for print
+        window.addEventListener('beforeprint', function() {
+            // Page 1: Client Info cards, Page 2: ROI Analysis, Page 3: Recovery & Revenue Analysis
+            const estimatedPages = 3;
+            document.getElementById('totalPages').textContent = estimatedPages;
+        });
+
+        // Validation function for mandatory fields
+        function validateAndPrint() {
+            const companyName = document.getElementById('companyName').value.trim();
+            const contactName = document.getElementById('contactName').value.trim();
+            const emailAddress = document.getElementById('emailAddress').value.trim();
+
+            if (!companyName) {
+                alert('Please enter Company Name');
+                document.getElementById('companyName').focus();
+                return;
+            }
+
+            if (!contactName) {
+                alert('Please enter Contact Name');
+                document.getElementById('contactName').focus();
+                return;
+            }
+
+            if (!emailAddress) {
+                alert('Please enter Email Address');
+                document.getElementById('emailAddress').focus();
+                return;
+            }
+
+            // Basic email validation
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(emailAddress)) {
+                alert('Please enter a valid Email Address');
+                document.getElementById('emailAddress').focus();
+                return;
+            }
+
+            // If all validations pass, trigger print
+            window.print();
+        }
+
+        // Calculation Functions
+        function formatNumber(value) {
+            return Math.round(value).toLocaleString('en-US');
+        }
+
+        function formatCurrency(value) {
+            const rounded = Math.round(value);
+            return 'R ' + rounded.toLocaleString('en-US');
+        }
+
+        function formatDecimal(value, decimals = 2) {
+            return 'R ' + value.toFixed(decimals);
+        }
+
+        function formatPercent(value) {
+            return Math.round(value * 100) + '%';
+        }
+
+        function calculate() {
+            // Get input values
+            const boxesPerMonth = parseFloat(document.getElementById('boxesPerMonth').value) || 0;
+            const telephone = parseFloat(document.getElementById('telephone').value) || 0;
+            const costPerBox = parseFloat(document.getElementById('costPerBox').value) || 0;
+            const rentalCost = parseFloat(document.getElementById('rentalCost').value) || 0;
+            const billingUsers = parseFloat(document.getElementById('billingUsers').value) || 0;
+            const nonBillingUsers = parseFloat(document.getElementById('nonBillingUsers').value) || 0;
+            const phoneRateHour = parseFloat(document.getElementById('phoneRateHour').value) || 1500;
+
+            // Sync the phone rate hour display
+            document.getElementById('phoneRateHourDisplay').textContent = formatCurrency(phoneRateHour);
+
+            // Calculate totals
+            const totalStaff = billingUsers + nonBillingUsers;
+            const recoveryRatio = totalStaff > 0 ? billingUsers / totalStaff : 0;
+
+            // Update staff section
+            document.getElementById('totalStaff').value = totalStaff;
+            document.getElementById('recoveryRatio').textContent = formatPercent(recoveryRatio);
+            document.getElementById('actualBillingPercent').value = Math.round(recoveryRatio * 100);
+
+            // Calculate consumption costs
+            const pagesPerBox = 2500;
+            const pagesPerMonth = boxesPerMonth * pagesPerBox;
+            const pagesPerAnnum = pagesPerMonth * 12;
+            const paperCostMonth = boxesPerMonth * costPerBox;
+            const costPerPage = costPerBox / pagesPerBox;
+            const electricityCost = 0.07;
+            const floorRental = 0.05;
+            const trueCost = costPerPage + rentalCost + electricityCost + floorRental;
+            const totalCostMonth = trueCost * pagesPerMonth;
+            const volumeScans = pagesPerMonth * 0.4;
+            const volumeEmails = 40 * billingUsers * 22;
+            const phoneRateMinute = phoneRateHour / 60;
+            const volumeCalls = telephone / 0.6;
+
+            // Update consumption costs display
+            document.getElementById('pagesPerMonth').textContent = formatNumber(pagesPerMonth);
+            document.getElementById('pagesPerAnnum').textContent = formatNumber(pagesPerAnnum);
+            document.getElementById('paperCostMonth').textContent = formatCurrency(paperCostMonth);
+            document.getElementById('costPerPage').textContent = formatDecimal(costPerPage);
+            document.getElementById('rentalDisplay').textContent = formatDecimal(rentalCost);
+            document.getElementById('trueCost').textContent = formatDecimal(trueCost);
+            document.getElementById('totalCostMonth').textContent = formatCurrency(totalCostMonth);
+            document.getElementById('volumeScans').textContent = formatNumber(volumeScans);
+            document.getElementById('volumeEmails').textContent = formatNumber(volumeEmails);
+            document.getElementById('actualTelCost').textContent = formatCurrency(telephone);
+            document.getElementById('volumeCalls').textContent = formatNumber(volumeCalls);
+            document.getElementById('phoneRateMinuteDisplay').textContent = formatDecimal(phoneRateMinute);
+            
+            // Update rec_phone input value with the phone rate per minute
+            document.getElementById('rec_phone').value = phoneRateMinute.toFixed(2);
+
+            // Update monthly volumes for calculated fields
+            document.getElementById('vol_copy').textContent = formatNumber(pagesPerMonth);
+            document.getElementById('vol_phone').textContent = formatNumber(volumeCalls);
+            document.getElementById('vol_scans').textContent = formatNumber(volumeScans);
+            document.getElementById('vol_emails').textContent = formatNumber(volumeEmails);
+
+            // Calculate billable volumes and revenue
+            calculateRevenue();
+        }
+
+        function calculateRevenue() {
+            const items = ['copy', 'colour', 'phone', 'scans', 'emails', 'mobile'];
+            
+            // Get the billing percentages
+            const lowEndPercent = (parseFloat(document.getElementById('lowEndPercent').value) || 10) / 100;
+            const midRangePercent = (parseFloat(document.getElementById('midRangePercent').value) || 25) / 100;
+            const billingUsers = parseFloat(document.getElementById('billingUsers').value) || 0;
+            const totalStaff = parseFloat(document.getElementById('totalStaff').value) || 1;
+            const actualRatio = billingUsers / totalStaff;
+            
+            items.forEach(item => {
+                const volElement = document.getElementById(`vol_${item}`);
+                let volume = 0;
+                
+                if (volElement.tagName === 'INPUT') {
+                    volume = parseFloat(volElement.value) || 0;
+                } else {
+                    volume = parseFloat(volElement.textContent.replace(/,/g, '')) || 0;
+                }
+
+                const shrinkage = (parseFloat(document.getElementById(`shrink_${item}`).value) || 0) / 100; // Convert percentage to decimal
+                
+                // Get recovery charge from input value
+                const recovery = parseFloat(document.getElementById(`rec_${item}`).value) || 0;
+                
+                const billableVolume = Math.round(volume - (volume * shrinkage)); // Round to whole number
+                document.getElementById(`bill_${item}`).textContent = formatNumber(billableVolume);
+
+                // Calculate revenue for all three scenarios using editable percentages
+                const revLow = billableVolume * recovery * lowEndPercent;
+                const revMid = billableVolume * recovery * midRangePercent;
+                const revAct = billableVolume * recovery * actualRatio;
+
+                document.getElementById(`rev_${item}_low`).textContent = formatCurrency(revLow);
+                document.getElementById(`rev_${item}_mid`).textContent = formatCurrency(revMid);
+                document.getElementById(`rev_${item}_act`).textContent = formatCurrency(revAct);
+            });
+
+            // Calculate totals
+            let totalLow = 0, totalMid = 0, totalAct = 0;
+            items.forEach(item => {
+                totalLow += parseFloat(document.getElementById(`rev_${item}_low`).textContent.replace(/[R ,]/g, '')) || 0;
+                totalMid += parseFloat(document.getElementById(`rev_${item}_mid`).textContent.replace(/[R ,]/g, '')) || 0;
+                totalAct += parseFloat(document.getElementById(`rev_${item}_act`).textContent.replace(/[R ,]/g, '')) || 0;
+            });
+
+            document.getElementById('total_low').textContent = formatCurrency(totalLow);
+            document.getElementById('total_mid').textContent = formatCurrency(totalMid);
+            document.getElementById('total_act').textContent = formatCurrency(totalAct);
+
+            document.getElementById('annual_low').textContent = formatCurrency(totalLow * 12);
+            document.getElementById('annual_mid').textContent = formatCurrency(totalMid * 12);
+            document.getElementById('annual_act').textContent = formatCurrency(totalAct * 12);
+        }
+
+        // Event listeners for all inputs
+        document.querySelectorAll('input[type="number"]:not([disabled])').forEach(input => {
+            input.addEventListener('input', calculate);
+        });
+
+        // Event listeners for revenue percentage inputs
+        document.getElementById('lowEndPercent').addEventListener('input', calculate);
+        document.getElementById('midRangePercent').addEventListener('input', calculate);
+
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
